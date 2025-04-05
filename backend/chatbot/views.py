@@ -1,17 +1,16 @@
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
-from .models import save_message, get_message_count
-import pickle
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
 from transformers import GPT2Tokenizer, GPT2LMHeadModel
+from .models import save_message, get_message_count
 
-# Load model and tokenizer once at startup
 tokenizer = GPT2Tokenizer.from_pretrained('chatbot/model')
+tokenizer.pad_token = tokenizer.eos_token
 model = GPT2LMHeadModel.from_pretrained('chatbot/model')
 
-@csrf_exempt
+@api_view(['POST'])
+@permission_classes([AllowAny])
 def chat(request):
     if not request.session.session_key:
         request.session.create()
@@ -22,15 +21,18 @@ def chat(request):
     if not request.user.is_authenticated:
         message_count = get_message_count(user_id)
         if message_count >= 10:
-            return JsonResponse({"error": "Message limit reached. Please sign up or log in."}, status=403)
+            return Response({
+                "error": "Message limit reached. Please sign up for unlimited messages.",
+                "signup_url": "/chat/signup/"
+            }, status=403)
 
-    if request.method == "POST":
-        message = request.POST.get("message", "").strip()
-        # Tokenize input and generate response
-        inputs = tokenizer.encode(message + " [SEP]", return_tensors="pt")
-        outputs = model.generate(inputs, max_length=50, num_return_sequences=1, pad_token_id=tokenizer.eos_token_id)
-        response = tokenizer.decode(outputs[0], skip_special_tokens=True).split("[SEP]")[1].strip()
-        
-        save_message(user_id, message, response)
-        return JsonResponse({"response": response})
-    return JsonResponse({"error": "Invalid request"}, status=400)
+    message = request.data.get("message", "").strip()
+    if not message:
+        return Response({"error": "Message is required"}, status=400)
+    
+    inputs = tokenizer.encode(message + " [SEP]", return_tensors="pt")
+    outputs = model.generate(inputs, max_length=50, num_return_sequences=1, pad_token_id=tokenizer.eos_token_id)
+    response = tokenizer.decode(outputs[0], skip_special_tokens=True).split("[SEP]")[1].strip()
+    
+    save_message(user_id, message, response)
+    return Response({"response": response})
