@@ -1,4 +1,5 @@
 from django.conf import settings
+import datetime
 
 def save_message(user_id, message, response):
     collection = settings.DB.messages
@@ -6,7 +7,7 @@ def save_message(user_id, message, response):
         "user_id": user_id,
         "message": message,
         "response": response,
-        "timestamp": import_datetime.datetime.now()
+        "timestamp": datetime.datetime.now()
     })
 
 def get_message_count(user_id):

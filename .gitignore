@@ -1,0 +1,54 @@
+# Virtual Environment
+env/
+venv/
+ENV/
+
+# Python Bytecode and Cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django Specific
+*.log
+*.pot
+*.pyc
+db.sqlite3
+migrations/
+
+# Machine Learning and Data
+*.pkl
+*.h5
+*.pt
+*.pth
+model.pkl
+data/
+*.jsonl
+*.tfrecord
+*.npz
+*.npy
+
+# Environment Variables
+.env
+*.env
+
+# Dependency Directories
+*.egg-info/
+*.egg
+dist/
+build/
+wheels/
+
+# IDE and Editor Files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS Generated Files
+.DS_Store
+Thumbs.db
+
+# Miscellaneous
+*.bak
+*.tmp
+*.cache
