@@ -9,39 +9,39 @@ django.setup()
 from django.conf import settings
 
 def train_model():
-    # Load dataset
-    dataset = load_dataset('json', data_files='data/conversations.json')
+    dataset = load_dataset('json', data_files='data/small_conversations.json')
     train_data = dataset['train']
 
-    # Initialize tokenizer and model
-    tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
-    model = GPT2LMHeadModel.from_pretrained('gpt2')
+    tokenizer = GPT2Tokenizer.from_pretrained('distilgpt2')
+    model = GPT2LMHeadModel.from_pretrained('distilgpt2')
 
-    # Tokenize data
+    tokenizer.pad_token = tokenizer.eos_token
+
     def tokenize_function(examples):
-        inputs = [f"{ex['input']} [SEP] {ex['response']}" for ex in examples]
-        return tokenizer(inputs, padding="max_length", truncation=True, max_length=128)
+        inputs = [f"{inp} [SEP] {resp}" for inp, resp in zip(examples['input'], examples['response'])]
+        encodings = tokenizer(inputs, padding="max_length", truncation=True, max_length=16)
+        encodings['labels'] = encodings['input_ids'].copy()
+        return encodings
 
-    tokenized_dataset = train_data.map(tokenize_function, batched=True)
+    tokenized_dataset = train_data.map(tokenize_function, batched=True, remove_columns=train_data.column_names)
 
-    # Training arguments
     training_args = TrainingArguments(
         output_dir='./chatbot_model',
         num_train_epochs=3,
-        per_device_train_batch_size=4,
-        save_steps=10_000,
+        per_device_train_batch_size=1,
+        gradient_accumulation_steps=4,
+        save_steps=50,
         save_total_limit=2,
         logging_dir='./logs',
+        fp16=False,
     )
 
-    # Trainer
     trainer = Trainer(
         model=model,
         args=training_args,
         train_dataset=tokenized_dataset,
     )
 
-    # Train the model
     trainer.train()
     model.save_pretrained('chatbot/model')
     tokenizer.save_pretrained('chatbot/model')
