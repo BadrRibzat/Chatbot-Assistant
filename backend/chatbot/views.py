@@ -6,15 +6,19 @@ import pickle
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-# Load the trained model
-with open('chatbot/model.pkl', 'rb') as f:
-    model_data = pickle.load(f)
-    vectorizer = model_data['vectorizer']
-    tfidf_matrix = model_data['tfidf_matrix']
-    responses = model_data['responses']
-
+# Do not load the model at module level; move it inside the view
 @csrf_exempt
 def chat(request):
+    # Load the model inside the view
+    try:
+        with open('chatbot/model.pkl', 'rb') as f:
+            model_data = pickle.load(f)
+            vectorizer = model_data['vectorizer']
+            tfidf_matrix = model_data['tfidf_matrix']
+            responses = model_data['responses']
+    except FileNotFoundError:
+        return JsonResponse({"error": "Chatbot model not found. Please train the model first."}, status=500)
+
     if not request.session.session_key:
         request.session.create()
         request.session.save()

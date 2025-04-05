@@ -14,7 +14,6 @@ def train_model():
     if not training_data:
         with open('data/conversations.json', 'r') as f:
             training_data = json.load(f)
-        # Insert into MongoDB
         if training_data:
             db.training_data.insert_many(training_data)
             print(f"Loaded {len(training_data)} entries into training_data collection.")
@@ -26,11 +25,9 @@ def train_model():
         print("No training data available. Please populate data/conversations.json.")
         return
 
-    # Vectorize inputs
     vectorizer = TfidfVectorizer()
     tfidf_matrix = vectorizer.fit_transform(inputs)
 
-    # Save the model and responses
     with open('chatbot/model.pkl', 'wb') as f:
         pickle.dump({'vectorizer': vectorizer, 'tfidf_matrix': tfidf_matrix, 'responses': responses}, f)
     print("Model trained and saved as chatbot/model.pkl.")
@@ -38,6 +35,6 @@ def train_model():
 if __name__ == "__main__":
     import os
     import django
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'chatbot_assistant.settings')
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')  # Changed from 'chatbot_assistant.settings'
     django.setup()
     train_model()
