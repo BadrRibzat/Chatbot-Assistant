@@ -5,20 +5,14 @@ from .models import save_message, get_message_count
 import pickle
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+from transformers import GPT2Tokenizer, GPT2LMHeadModel
 
-# Do not load the model at module level; move it inside the view
+# Load model and tokenizer once at startup
+tokenizer = GPT2Tokenizer.from_pretrained('chatbot/model')
+model = GPT2LMHeadModel.from_pretrained('chatbot/model')
+
 @csrf_exempt
 def chat(request):
-    # Load the model inside the view
-    try:
-        with open('chatbot/model.pkl', 'rb') as f:
-            model_data = pickle.load(f)
-            vectorizer = model_data['vectorizer']
-            tfidf_matrix = model_data['tfidf_matrix']
-            responses = model_data['responses']
-    except FileNotFoundError:
-        return JsonResponse({"error": "Chatbot model not found. Please train the model first."}, status=500)
-
     if not request.session.session_key:
         request.session.create()
         request.session.save()
@@ -32,18 +26,10 @@ def chat(request):
 
     if request.method == "POST":
         message = request.POST.get("message", "").strip()
-        # Vectorize the input
-        message_vector = vectorizer.transform([message])
-        # Compute similarity
-        similarities = cosine_similarity(message_vector, tfidf_matrix)
-        best_match_idx = similarities.argmax()
-        similarity_score = similarities[0][best_match_idx]
-
-        # Threshold for a good match (adjust as needed)
-        if similarity_score > 0.3:
-            response = responses[best_match_idx]
-        else:
-            response = "I don’t know how to respond to that yet!"
+        # Tokenize input and generate response
+        inputs = tokenizer.encode(message + " [SEP]", return_tensors="pt")
+        outputs = model.generate(inputs, max_length=50, num_return_sequences=1, pad_token_id=tokenizer.eos_token_id)
+        response = tokenizer.decode(outputs[0], skip_special_tokens=True).split("[SEP]")[1].strip()
         
         save_message(user_id, message, response)
         return JsonResponse({"response": response})

@@ -1,40 +1,51 @@
 import json
-import pickle
-from sklearn.feature_extraction.text import TfidfVectorizer
-import nltk
+import os
+import django
+from transformers import GPT2Tokenizer, GPT2LMHeadModel, Trainer, TrainingArguments
+from datasets import load_dataset
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
+django.setup()
 from django.conf import settings
 
-nltk.download('punkt')
-
 def train_model():
-    db = settings.DB
-    training_data = list(db.training_data.find())
+    # Load dataset
+    dataset = load_dataset('json', data_files='data/conversations.json')
+    train_data = dataset['train']
 
-    # If no data in MongoDB, load from JSON
-    if not training_data:
-        with open('data/conversations.json', 'r') as f:
-            training_data = json.load(f)
-        if training_data:
-            db.training_data.insert_many(training_data)
-            print(f"Loaded {len(training_data)} entries into training_data collection.")
+    # Initialize tokenizer and model
+    tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
+    model = GPT2LMHeadModel.from_pretrained('gpt2')
 
-    inputs = [item["input"] for item in training_data]
-    responses = [item["response"] for item in training_data]
+    # Tokenize data
+    def tokenize_function(examples):
+        inputs = [f"{ex['input']} [SEP] {ex['response']}" for ex in examples]
+        return tokenizer(inputs, padding="max_length", truncation=True, max_length=128)
 
-    if not inputs:
-        print("No training data available. Please populate data/conversations.json.")
-        return
+    tokenized_dataset = train_data.map(tokenize_function, batched=True)
 
-    vectorizer = TfidfVectorizer()
-    tfidf_matrix = vectorizer.fit_transform(inputs)
+    # Training arguments
+    training_args = TrainingArguments(
+        output_dir='./chatbot_model',
+        num_train_epochs=3,
+        per_device_train_batch_size=4,
+        save_steps=10_000,
+        save_total_limit=2,
+        logging_dir='./logs',
+    )
 
-    with open('chatbot/model.pkl', 'wb') as f:
-        pickle.dump({'vectorizer': vectorizer, 'tfidf_matrix': tfidf_matrix, 'responses': responses}, f)
-    print("Model trained and saved as chatbot/model.pkl.")
+    # Trainer
+    trainer = Trainer(
+        model=model,
+        args=training_args,
+        train_dataset=tokenized_dataset,
+    )
+
+    # Train the model
+    trainer.train()
+    model.save_pretrained('chatbot/model')
+    tokenizer.save_pretrained('chatbot/model')
+    print("Model trained and saved to chatbot/model/")
 
 if __name__ == "__main__":
-    import os
-    import django
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')  # Changed from 'chatbot_assistant.settings'
-    django.setup()
     train_model()
