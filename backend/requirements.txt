@@ -8,3 +8,4 @@ python-decouple==3.8
 nltk==3.8.1
 transformers==4.40.0  # Optional for future use
 torch==2.3.0  # Optional for future use
+gunicorn>=20.1.0
