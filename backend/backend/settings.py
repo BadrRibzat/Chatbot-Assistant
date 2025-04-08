@@ -64,8 +64,8 @@ LOGIN_URL = '/chat/signin/'  # Redirect to your signin endpoint if needed
 
 
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:8080',  # Local dev
-    'https://your-chatbot-frontend.netlify.app',  # Update after Netlify deploy
+    'http://localhost:8080',
+    'https://chatbot-assistant-frontend-25az5xf9l-badr-ribzat-project.vercel.app',
 ]
 
 ROOT_URLCONF = 'backend.urls'
