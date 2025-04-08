@@ -2,12 +2,7 @@ from django.conf import settings
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
-from transformers import GPT2Tokenizer, GPT2LMHeadModel
 from .models import save_message, get_message_count
-
-tokenizer = GPT2Tokenizer.from_pretrained('chatbot/model')
-tokenizer.pad_token = tokenizer.eos_token
-model = GPT2LMHeadModel.from_pretrained('chatbot/model')
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
