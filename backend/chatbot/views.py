@@ -1,35 +1,39 @@
-from django.conf import settings
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from django.conf import settings
 from .models import save_message, get_message_count
-
-@api_view(['GET'])
-@permission_classes([AllowAny])
-def health(request):
-    return Response({"status": "ok"}, status=200)
+import re
 
 @api_view(['POST'])
-@permission_classes([AllowAny])
 def chat(request):
-    if not request.session.session_key:
-        request.session.create()
-        request.session.save()
-    
-    user_id = request.user.id if request.user.is_authenticated else f"guest_{request.session.session_key}"
-    
-    if not request.user.is_authenticated:
-        message_count = get_message_count(user_id)
-        if message_count >= 10:
-            return Response({
-                "error": "Message limit reached. Please sign up for unlimited messages.",
-                "signup_url": "/chat/signup/"
-            }, status=403)
+    user_id = request.user.id if request.user.is_authenticated else "anonymous"
+    message = request.data.get('message', '').strip()
 
-    message = request.data.get("message", "").strip()
     if not message:
-        return Response({"error": "Message is required"}, status=400)
+        return Response({"response": "Please send a message!"}, status=400)
+
+    # Query training data for a response
+    collection = settings.DB.training_data
+    # Case-insensitive match with basic normalization
+    normalized_message = re.sub(r'[^\w\s]', '', message.lower())
     
-    response = f"Echo: {message}"  # Mock response
+    # Exact match first
+    result = collection.find_one({"input": {"$regex": f"^{re.escape(message)}$", "$options": "i"}})
+    if result:
+        response = result['response']
+    else:
+        # Fallback: partial match or default
+        result = collection.find_one({"input": {"$regex": normalized_message, "$options": "i"}})
+        response = result['response'] if result else "Sorry, I don’t know how to respond to that yet!"
+
     save_message(user_id, message, response)
-    return Response({"response": response})
+    message_count = get_message_count(user_id)
+
+    return Response({
+        "response": response,
+        "message_count": message_count
+    })
+
+@api_view(['GET'])
+def health(request):
+    return Response({"status": "ok"}, status=200)

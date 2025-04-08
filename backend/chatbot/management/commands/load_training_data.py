@@ -9,11 +9,9 @@ class Command(BaseCommand):
         db = settings.DB
         collection = db.training_data
 
-        # Clear existing data (optional)
         collection.drop()
         self.stdout.write('Cleared existing training data')
 
-        # Load data from file
         with open('data/conversations.json', 'r') as f:
             data = json.load(f)
             collection.insert_many(data)
