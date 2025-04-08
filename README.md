@@ -1,32 +1,38 @@
 # Chatbot Assistant
 
-This is an AI-powered chatbot assistant built with Django, leveraging machine learning techniques (TF-IDF with scikit-learn) and MongoDB for data storage. The project demonstrates my skills in developing AI chatbot solutions tailored to client requirements, integrating natural language processing (NLP) and web development.
+This is an AI-powered chatbot assistant built with Django, leveraging machine learning techniques (TF-IDF with scikit-learn) and MongoDB for data storage. The project demonstrates my skills in developing AI chatbot solutions tailored to client requirements, integrating natural language processing (NLP) and web development. It’s deployed on Fly.io with REST API documentation via Swagger and ReDoc.
 
 ## Features
 - **AI Chatbot**: Responds to user messages using a pre-trained TF-IDF model.
 - **Session Management**: Limits guest users to 10 messages, encouraging authentication.
 - **MongoDB Integration**: Stores messages and training data in a NoSQL database.
 - **Django Backend**: Provides a robust web framework for API endpoints.
+- **API Documentation**: Swagger (`/`) and ReDoc (`/redoc/`) for easy exploration.
+- **Health Check**: `/chat/health/` endpoint to monitor app status.
+- **Deployed on Fly.io**: Accessible at `https://chatbot-backend-badr.fly.dev/`.
 - **Extensible**: Ready for enhancements with TensorFlow, Transformers, or other ML frameworks.
 
 ## Tech Stack
 - **Backend**: Django 4.2.11, Python 3.11
 - **Database**: MongoDB (via pymongo)
 - **Machine Learning**: scikit-learn (TF-IDF), NLTK
-- **Dependencies**: See `requirements.txt` for full list (e.g., NumPy, Transformers)
+- **API Tools**: Django REST Framework, drf-yasg (Swagger/ReDoc)
+- **Deployment**: Fly.io (via `fly.toml` and Docker)
+- **Dependencies**: See `backend/requirements.txt` (e.g., `gunicorn`, `django-cors-headers`)
 
 ## Setup Instructions
 
 ### Prerequisites
 - Python 3.11+
-- MongoDB (local or cloud instance, e.g., MongoDB Atlas)
+- MongoDB (local or cloud, e.g., MongoDB Atlas)
 - Git
+- Fly.io CLI (`flyctl`)
 
-### Installation
+### Local Installation
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/yourusername/Chatbot-Assistant.git
-   cd Chatbot-Assistant
+   git clone https://github.com/BadrRibzat/Chatbot-Assistant.git
+   cd Chatbot-Assistant/backend
 
 2. **Set Up Virtual Environment**:
    ```bash
@@ -35,70 +41,90 @@ This is an AI-powered chatbot assistant built with Django, leveraging machine le
 
 3. **Install Dependencies**:
    ```bash
-   pip install -r backend/requirements.txt
+   pip install -r requirements.txt
 
-4. **Configure Environment Variables**: 
-Create a .env file in the backend/ directory with:
+4. **Configure Environment Variables: Create a .env file in backend/ with your values**:
    ```bash
-   MONGO_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/?retryWrites=true&w=majority
-   SECRET_KEY=<your-secret-key>
-   DEBUG=true
 
-Replace <username>, <password>, <cluster>, and <your-secret-key> with your own values.
-
-5. **Initialize MongoDB**:
+5. **Run Migrations**:
    ```bash
-   python backend/manage.py init_db
+   python manage.py migrate
 
-6. **Load Training Data (optional)**:
+6. **Run the Server**:
    ```bash
-   python backend/manage.py load_training_data
+   python manage.py runserver
 
-7. **Train the Model**:
+### Access the API at http://localhost:8000/.
+
+### Deployment on Fly.io
+
+1. **Install Fly CLI: Follow Fly.io’s installation guide**.
+
+2. **Login to Fly**:
    ```bash
-   python backend/chatbot/train.py
+   flyctl auth login
 
-8. **Run the Server**:
+3. **Deploy: From backend/**:
    ```bash
-   python backend/manage.py runserver
+   flyctl deploy
 
-Access the chatbot API at http://localhost:8000/chat/.
+. Uses fly.toml and Dockerfile to build and deploy.
+. App runs at https://chatbot-backend-badr.fly.dev/.
 
-### Usage
-
-Send a POST request to /chat/ with a message field to get a response:
+4. **Create a Superuser (optional)**:
    ```bash
-   curl -X POST -d "message=Hello" http://localhost:8000/chat/
+   flyctl ssh console -a chatbot-backend-badr
+   python manage.py createsuperuser
 
-Guest users are limited to 10 messages; authenticated users have unlimited access.
+### API Endpoints
+
+. Health Check: GET /chat/health/ - Returns {"status": "ok"}.
+. Chat: POST /chat/ - Send message=<text> to get a response (e.g., {"response": "Echo: <text>"}).
+. Guests limited to 10 messages.
+. Sign In: POST /chat/signin/ - Authenticate with username=<user>&password=<pass>.
+. Sign Up: POST /chat/signup/ - Not implemented yet (501 Not Implemented).
+. Sign Out: POST /chat/signout/ - Logs out the user.
+. Swagger UI: GET / - Interactive API documentation.
+. ReDoc: GET /redoc/ - Alternative API documentation.
+
+### Example Usage
+. **Health Check**:
+   ```bash
+   curl https://chatbot-backend-badr.fly.dev/chat/health/
+
+. **Chat as Guest**:
+   ```bash
+   curl -X POST -d "message=Hello" https://chatbot-backend-badr.fly.dev/chat/
+
+. **Sign In**:
+   ```bash
+   curl -X POST -H "Content-Type: application/x-www-form-urlencoded" -d "username=Badr&password=14121990" https://chatbot-backend-badr.fly.dev/chat/signin/
 
 ### Project Structure
    ```bash
    Chatbot-Assistant/
-├── backend/              # Django project root
-│   ├── backend/         # Django settings and URLs
-│   ├── chatbot/         # Chatbot app (models, views, training)
-│   ├── data/            # Training data (e.g., conversations.json)
-│   ├── manage.py        # Django management script
-│   └── requirements.txt # Python dependencies
-└── README.md            # Project documentation
+   ├── backend/              # Django project root
+   │   ├── backend/         # Settings and URLs
+   │   ├── chatbot/         # Chatbot app (models, views, auth)
+   │   ├── staticfiles/     # Collected static assets
+   │   ├── manage.py        # Django management script
+   │   ├── requirements.txt # Python dependencies
+   │   ├── fly.toml         # Fly.io configuration
+   │   ├── Dockerfile       # Docker build instructions
+   │   └── .env             # Environment variables
+   └── README.md            # Project documentation
 
-Next Steps
-Add user authentication and frontend interface.
-Enhance the model with Transformers (e.g., BERT) for better NLP.
-Deploy to a cloud platform (e.g., Heroku, AWS).
+### Next Steps
+
+. **Frontend: Build a UI (e.g., React, Vue) and deploy on Netlify, updating CORS_ALLOWED_ORIGINS**.
+
+. **Enhance AI: Integrate Transformers (e.g., BERT) for better NLP responses**.
+
+. **Signup: Implement user registration in chatbot/auth_views.py**.
+
+. **Monitoring: Add logging and analytics for usage tracking**.
 
 ### License
-This project is for demonstration purposes and not licensed for commercial use.
-   ```bash
 
-**Explanation:**
-- **Overview**: Describes the project and its purpose.
-- **Features**: Highlights key functionalities.
-- **Tech Stack**: Lists the main technologies used.
-- **Setup Instructions**: Provides clear steps to get the project running.
-- **Usage**: Shows how to interact with the chatbot API.
-- **Project Structure**: Outlines the directory layout.
-- **Next Steps**: Suggests potential improvements.
+. **This project is for demonstration purposes and not licensed for commercial use**.
 
----
