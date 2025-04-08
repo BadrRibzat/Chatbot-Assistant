@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = ['chatbot-backend-badr.fly.dev', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['*']  # Allows Fly.io internal IPs
 
 # Application definition
 INSTALLED_APPS = [
@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'rest_framework.authtoken',
+    'drf_yasg',
     'chatbot',
 ]
 

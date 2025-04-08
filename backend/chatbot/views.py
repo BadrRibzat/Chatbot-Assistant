@@ -4,6 +4,11 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from .models import save_message, get_message_count
 
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def health(request):
+    return Response({"status": "ok"}, status=200)
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def chat(request):
