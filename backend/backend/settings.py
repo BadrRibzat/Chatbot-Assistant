@@ -115,7 +115,10 @@ REST_FRAMEWORK = {
 }
 
 # Static files
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'  # Where collectstatic will dump files
+
+LOGIN_URL = '/chat/signin/'  # Redirect to your signin endpoint if needed
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
