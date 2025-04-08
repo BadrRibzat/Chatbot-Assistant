@@ -1,11 +1,12 @@
 django==4.2.11
-pymongo==4.6.2
-dnspython==2.6.1  # Required for MongoDB Atlas connection
+dnspython==2.6.1
+python-decouple==3.8
+gunicorn>=20.1.0
+django-cors-headers==4.3.1
+pymongo==4.6.2 # Required for MongoDB Atlas connection
 scikit-learn==1.4.1.post1  # For ML training
 numpy==1.26.4
 pandas==2.2.1
-python-decouple==3.8
 nltk==3.8.1
 transformers==4.40.0  # Optional for future use
 torch==2.3.0  # Optional for future use
-gunicorn>=20.1.0

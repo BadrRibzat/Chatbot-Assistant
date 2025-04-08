@@ -30,9 +30,6 @@ def chat(request):
     if not message:
         return Response({"error": "Message is required"}, status=400)
     
-    inputs = tokenizer.encode(message + " [SEP]", return_tensors="pt")
-    outputs = model.generate(inputs, max_length=50, num_return_sequences=1, pad_token_id=tokenizer.eos_token_id)
-    response = tokenizer.decode(outputs[0], skip_special_tokens=True).split("[SEP]")[1].strip()
-    
+    response = f"Echo: {message}"  # Mock response
     save_message(user_id, message, response)
     return Response({"response": response})
