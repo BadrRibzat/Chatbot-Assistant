@@ -1,3 +1,15 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+body {
+  font-family: 'Roboto', sans-serif;
+}
+
+.btn {
+  @apply px-4 py-2 rounded-lg font-semibold transition duration-200;
+}
+
+.input {
+  @apply w-full p-2 border rounded focus:outline-none focus:ring-2;
+}

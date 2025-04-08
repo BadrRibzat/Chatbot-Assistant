@@ -1,7 +1,4 @@
-import { config } from 'dotenv'
-const env = config({ path: '../../.env' }).parsed // Adjust path if needed
-
-const BASE_URL = env?.VUE_APP_BACKEND_URL || 'https://chatbot-assistant-backend.onrender.com'
+const BASE_URL = process.env.VUE_APP_BACKEND_URL || 'https://chatbot-backend-badr.fly.dev'
 
 export const signup = async (username, password) => {
   const response = await fetch(`${BASE_URL}/chat/signup/`, {

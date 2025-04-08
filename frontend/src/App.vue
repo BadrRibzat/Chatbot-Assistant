@@ -1,16 +1,11 @@
 <template>
-  <div id="app">
-    <ChatComponent />
+  <div id="app" class="min-h-screen bg-gray-100">
+    <router-view />
   </div>
 </template>
 
 <script>
-import ChatComponent from './components/ChatComponent.vue'
-
 export default {
-  name: 'App',
-  components: {
-    ChatComponent
-  }
+  name: 'App'
 }
 </script>

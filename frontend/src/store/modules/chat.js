@@ -22,7 +22,7 @@ export default {
     }
   },
   actions: {
-    async sendMessage({ commit, state, rootState }, message) {
+    async sendMessage({ commit, rootState }, message) { // Removed unused 'state'
       if (!message.trim()) return
       const token = rootState.auth.token
       const data = await sendMessage(message, token)

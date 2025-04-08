@@ -31,27 +31,43 @@ export default {
   },
   actions: {
     async signup({ commit }, { username, password }) {
-      const data = await signup(username, password)
-      if (data.token) {
-        commit('setAuth', { token: data.token, username })
-      } else {
-        commit('setError', data.error)
+      try {
+        const data = await signup(username, password)
+        if (data.token) {
+          commit('setAuth', { token: data.token, username })
+          return true
+        } else {
+          commit('setError', data.error || 'Signup failed')
+          return false
+        }
+      } catch (e) {
+        commit('setError', 'Something went wrong')
+        return false
       }
     },
     async signin({ commit }, { username, password }) {
-      const data = await signin(username, password)
-      if (data.token) {
-        commit('setAuth', { token: data.token, username })
-      } else {
-        commit('setError', data.error)
+      try {
+        const data = await signin(username, password)
+        if (data.token) {
+          commit('setAuth', { token: data.token, username })
+          return true
+        } else {
+          commit('setError', data.error || 'Signin failed')
+          return false
+        }
+      } catch (e) {
+        commit('setError', 'Something went wrong')
+        return false
       }
     },
     async signout({ commit, state }) {
-      const data = await signout(state.token)
-      if (data.message) {
+      try {
+        await signout(state.token)
         commit('clearAuth')
-      } else {
+        return true
+      } catch (e) {
         commit('setError', 'Failed to sign out')
+        return false
       }
     }
   }
