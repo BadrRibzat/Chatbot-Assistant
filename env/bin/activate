@@ -35,6 +35,8 @@ deactivate () {
     fi
 }
 
+export PATH="/home/badr/.fly/bin:$PATH"
+
 # unset irrelevant variables
 deactivate nondestructive
 

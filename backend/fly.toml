@@ -23,5 +23,7 @@ primary_region = "iad"  # Free tier region (Virginia, US)
     interval = "10s"
     timeout = "2s"
     grace_period = "5s"
-    method = "GET"
-    path = "/chat/"  # Your endpoint
+    method = "POST"
+    path = "/chat/"
+    headers = { "Content-Type" = "application/x-www-form-urlencoded" }
+    body = "message=healthcheck"
