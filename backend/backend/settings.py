@@ -62,11 +62,14 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 LOGIN_URL = '/chat/signin/'  # Redirect to your signin endpoint if needed
 
+# Replace CORS_ALLOWED_ORIGINS with a more flexible setup
+CORS_ALLOW_ALL_ORIGINS = False  # Don’t allow all origins for security
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:8080',
-    'http://localhost:3000',  # Add this for vercel dev
-    'https://chatbot-assistant-frontend-25az5xf9l-badr-ribzat-project.vercel.app',
-    'https://chatbot-assistant-frontend-jchxepp6c-badr-ribzat-project.vercel.app',  # Latest Vercel URL
+    'http://localhost:3000',
+]
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r'^https://.*\.vercel\.app$',  # Allow all Vercel subdomains
 ]
 
 ROOT_URLCONF = 'backend.urls'
