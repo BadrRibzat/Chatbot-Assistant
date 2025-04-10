@@ -53,3 +53,4 @@ Thumbs.db
 *.tmp
 *.cache
 backend/chatbot/model/
+.vercel
